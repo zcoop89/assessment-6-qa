@@ -6,9 +6,20 @@ const { shuffleArray } = require("./utils");
 
 app.use(express.json());
 
+var Rollbar = require('rollbar')
+var rollbar = new Rollbar({
+  accessToken: '100cf4f2b7c24359aa0cc2102b50cf7d',
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+})
+
+// record a generic message and send it to Rollbar
+rollbar.log('Hello world!')
+
 app.use(express.static("public"));
 
 app.get("/api/robots", (req, res) => {
+  rollbar.log("got all robots")
   try {
     res.status(200).send(bots);
   } catch (error) {
@@ -18,6 +29,7 @@ app.get("/api/robots", (req, res) => {
 });
 
 app.get("/api/robots/five", (req, res) => {
+  rollbar.log("returned 5 robots")
   try {
     let shuffled = shuffleArray(bots);
     let choices = shuffled.slice(0, 5);
@@ -30,6 +42,7 @@ app.get("/api/robots/five", (req, res) => {
 });
 
 app.post("/api/duel", (req, res) => {
+  rollbar.log("started duel")
   try {
     // getting the duos from the front end
     let { compDuo, playerDuo } = req.body;
@@ -57,9 +70,11 @@ app.post("/api/duel", (req, res) => {
     // comparing the total health to determine a winner
     if (compHealthAfterAttack > playerHealthAfterAttack) {
       playerRecord.losses++;
+      rollbar.log("player lost")
       res.status(200).send("You lost!");
     } else {
       playerRecord.wins++;
+      rollbar.log("player won")
       res.status(200).send("You won!");
     }
   } catch (error) {
@@ -69,6 +84,7 @@ app.post("/api/duel", (req, res) => {
 });
 
 app.get("/api/player", (req, res) => {
+  rollbar.log("got player")
   try {
     res.status(200).send(playerRecord);
   } catch (error) {
